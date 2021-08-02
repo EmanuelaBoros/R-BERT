@@ -353,6 +353,7 @@ def main():
         config.pretrained_model_name, do_lower_case=do_lower_case, additional_special_tokens=additional_special_tokens)    
     model = BertForSequenceClassification.from_pretrained(
         config.pretrained_model_name, config=bertconfig)
+    model.resize_token_embeddings(len(tokenizer))
 
     if config.local_rank == 0:
         # Make sure only the first process in distributed training will download model & vocab
@@ -392,6 +393,7 @@ def main():
         model = BertForSequenceClassification.from_pretrained(config.output_dir)
         tokenizer = BertTokenizer.from_pretrained(
             config.output_dir, do_lower_case=do_lower_case, additional_special_tokens=additional_special_tokens)
+        model.resize_token_embeddings(len(tokenizer))
         model.to(config.device)
 
     # Evaluation
@@ -410,6 +412,7 @@ def main():
             global_step = checkpoint.split(
                 '-')[-1] if len(checkpoints) > 1 else ""
             model = BertForSequenceClassification.from_pretrained(checkpoint)
+            model.resize_token_embeddings(len(tokenizer))
             model.to(config.device)
             result = evaluate(config, model, tokenizer, prefix=global_step)
             result = dict((k + '_{}'.format(global_step), v)
